@@ -238,6 +238,20 @@ namespace CustomBackpack
                     ChangeScroll(menu, 1);
                     __instance.currentlySnappedComponent = __instance.getComponentWithID(old.myID + columns);
                 }
+                else if (direction == 0 && __instance is ShopMenu shopMenu && old.myID >= IDOffset && old.myID < IDOffset + columns)
+                {
+                    // Exit the (expanded) inventory back up to the shop's for-sale list. Vanilla ShopMenu
+                    // links the inventory's top row to the last for-sale button (upNeighborID = 3546 +
+                    // forSaleButtons.Count - 1), but InventoryMenu_Postfix overwrote that with an
+                    // InventoryPage-only id (12340 + col) and marked it immutable, so without this the
+                    // controller cursor dead-ends in the inventory. Mirror vanilla's link here.
+                    var target = __instance.getComponentWithID(
+                        ShopMenu.region_shopButtonModifier + Math.Max(0, shopMenu.forSaleButtons.Count - 1)
+                    );
+                    if (target is null)
+                        return true;
+                    __instance.currentlySnappedComponent = target;
+                }
                 else
                 {
                     SMonitor.Log($"b {direction}, {old.myID}, {old.upNeighborID}, {old.downNeighborID}");
